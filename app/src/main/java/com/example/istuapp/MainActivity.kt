@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 
@@ -24,6 +25,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var restartButton: FloatingActionButton
     private lateinit var restartActivity: Button
     private lateinit var errorText: TextView
+    private lateinit var swipeContainer: SwipeRefreshLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +37,13 @@ class MainActivity : AppCompatActivity() {
         backButton.setOnClickListener(backListener)
         restartButton.setOnClickListener(restartListener)
         restartActivity.setOnClickListener(restartActivityListener)
+
+        swipeContainer.setOnRefreshListener(swipeContainerListener)
+    }
+
+    private var swipeContainerListener: SwipeRefreshLayout.OnRefreshListener = SwipeRefreshLayout.OnRefreshListener {
+            webView.reload()
+            swipeContainer.isRefreshing = false
     }
 
     private var backListener: View.OnClickListener = View.OnClickListener{
@@ -128,5 +137,6 @@ class MainActivity : AppCompatActivity() {
         restartButton = findViewById(R.id.restartButton)
         restartActivity = findViewById(R.id.restartActivity)
         errorText = findViewById(R.id.errorText)
+        swipeContainer = findViewById(R.id.swipeContainer)
     }
 }
