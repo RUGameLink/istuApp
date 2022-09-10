@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">istuApp</string>
+    <string name="app_name">Политех</string>
     <string name="loading_text">Загрузка</string>
     <string name="no_internet">Отсутствует соединение с интернетом. Проверьте настройки и попробуйте еще раз.</string>
     <string name="restart_activity">Перезагрузить страницу</string>

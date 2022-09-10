@@ -7,6 +7,8 @@ import android.net.ConnectivityManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.webkit.*
 import android.widget.Button
@@ -15,15 +17,15 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
-    private lateinit var backButton: FloatingActionButton
-    private lateinit var restartButton: FloatingActionButton
     private lateinit var restartActivity: Button
     private lateinit var errorText: TextView
+    private lateinit var swipeContainer: SwipeRefreshLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,34 +34,58 @@ class MainActivity : AppCompatActivity() {
         init()
         loadPage(this)
 
-        backButton.setOnClickListener(backListener)
-        restartButton.setOnClickListener(restartListener)
         restartActivity.setOnClickListener(restartActivityListener)
+
+        swipeContainer.setOnRefreshListener(swipeContainerListener)
     }
 
-    private var backListener: View.OnClickListener = View.OnClickListener{
+    private var swipeContainerListener: SwipeRefreshLayout.OnRefreshListener = SwipeRefreshLayout.OnRefreshListener {
+        if(applicationContext.isConnectedToNetwork()){
+            webView.reload()
+            Handler(Looper.getMainLooper()).postDelayed(
+                {
+
+                    elementVisible(true)
+                },
+                5000 // value in milliseconds
+            )
+
+
+        }
+        else{
+            Toast.makeText(this@MainActivity, getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
+        }
+            swipeContainer.isRefreshing = false
+    }
+
+    private var restartActivityListener: View.OnClickListener = View.OnClickListener {
+        if(applicationContext.isConnectedToNetwork()){
+            loadPage(this)
+            webView.reload()
+            Handler(Looper.getMainLooper()).postDelayed(
+                {
+                    elementVisible(true)
+                },
+                5000 // value in milliseconds
+            )
+        }
+        else{
+            Toast.makeText(this@MainActivity, getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onBackPressed() {
         if(applicationContext.isConnectedToNetwork()) {
             if (webView.canGoBack()) {
                 webView.goBack()
+            }
+            else{
+                super.onBackPressed()
             }
         }
         else{
             Toast.makeText(this@MainActivity, getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
         }
-
-    }
-
-    private var restartListener: View.OnClickListener = View.OnClickListener {
-        if(applicationContext.isConnectedToNetwork()){
-            webView.reload()
-        }
-        else{
-            Toast.makeText(this@MainActivity, getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private var restartActivityListener: View.OnClickListener = View.OnClickListener {
-        loadPage(this)
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -109,8 +135,6 @@ class MainActivity : AppCompatActivity() {
     }
     private fun elementVisible(state: Boolean){
         webView.isVisible = state
-        backButton.isVisible = state
-        restartButton.isVisible = state
 
         restartActivity.isVisible = !state
         errorText.isVisible = !state
@@ -124,9 +148,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun init(){
         webView = findViewById(R.id.webView)
-        backButton = findViewById(R.id.backButton)
-        restartButton = findViewById(R.id.restartButton)
         restartActivity = findViewById(R.id.restartActivity)
         errorText = findViewById(R.id.errorText)
+        swipeContainer = findViewById(R.id.swipeContainer)
     }
 }
