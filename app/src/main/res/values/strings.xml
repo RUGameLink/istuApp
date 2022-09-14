@@ -3,4 +3,5 @@
     <string name="loading_text">Загрузка</string>
     <string name="no_internet">Отсутствует соединение с интернетом. Проверьте настройки и попробуйте еще раз.</string>
     <string name="restart_activity">Перезагрузить страницу</string>
+    <string name="search_text">Введите текст для поиска</string>
 </resources>

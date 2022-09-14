@@ -12,6 +12,7 @@ import android.os.Looper
 import android.view.View
 import android.webkit.*
 import android.widget.Button
+import android.widget.SearchView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -19,6 +20,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import android.widget.SearchView.OnQueryTextListener as OnQueryTextListener
 
 
 class MainActivity : AppCompatActivity() {
@@ -26,17 +28,33 @@ class MainActivity : AppCompatActivity() {
     private lateinit var restartActivity: Button
     private lateinit var errorText: TextView
     private lateinit var swipeContainer: SwipeRefreshLayout
+    private lateinit var searchView: SearchView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        var request = "https://www.istu.edu/schedule/"
         init()
-        loadPage(this)
+        loadPage(this, request)
 
         restartActivity.setOnClickListener(restartActivityListener)
 
         swipeContainer.setOnRefreshListener(swipeContainerListener)
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                var text = query.replace(" ", "+", false)
+                var request = "https://www.istu.edu/schedule/?search=" + text
+                loadPage(this@MainActivity, request)
+                return false
+            }
+            override fun onQueryTextChange(newText: String): Boolean {
+            /*    var text = newText.replace(" ", "+", false)
+                var request = "https://www.istu.edu/schedule/?search=" + text
+                loadPage(this@MainActivity, request) */
+                return false
+            }
+        })
     }
 
     private var swipeContainerListener: SwipeRefreshLayout.OnRefreshListener = SwipeRefreshLayout.OnRefreshListener {
@@ -44,7 +62,6 @@ class MainActivity : AppCompatActivity() {
             webView.reload()
             Handler(Looper.getMainLooper()).postDelayed(
                 {
-
                     elementVisible(true)
                 },
                 5000 // value in milliseconds
@@ -60,7 +77,8 @@ class MainActivity : AppCompatActivity() {
 
     private var restartActivityListener: View.OnClickListener = View.OnClickListener {
         if(applicationContext.isConnectedToNetwork()){
-            loadPage(this)
+            var request = "https://www.istu.edu/schedule/"
+            loadPage(this, request)
             webView.reload()
             Handler(Looper.getMainLooper()).postDelayed(
                 {
@@ -89,7 +107,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private fun loadPage(context: Context){
+    private fun loadPage(context: Context, request: String){
         if (context.isConnectedToNetwork()) {
             elementVisible(true)
             webView.webViewClient = WebViewClient()
@@ -97,7 +115,8 @@ class MainActivity : AppCompatActivity() {
             // включаем поддержку JavaScript
             webView.settings.javaScriptEnabled = true
             // указываем страницу загрузки
-            webView.loadUrl("https://www.istu.edu/schedule/")
+        //    webView.loadUrl("https://www.istu.edu/schedule/")
+            webView.loadUrl(request)
 
             val builder = AlertDialog.Builder(this@MainActivity)
             val dialogView = layoutInflater.inflate(R.layout.progress_dialog, null)
@@ -151,5 +170,6 @@ class MainActivity : AppCompatActivity() {
         restartActivity = findViewById(R.id.restartActivity)
         errorText = findViewById(R.id.errorText)
         swipeContainer = findViewById(R.id.swipeContainer)
+        searchView = findViewById(R.id.searchView)
     }
 }
